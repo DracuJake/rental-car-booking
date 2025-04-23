@@ -14,10 +14,11 @@ exports.register = async (req, res, next) => {
       password,
       role,
     });
-    const token = await user.getSignedJwtToken();
-    res.status(200).json({ success: true,  _id: user._id,
-        name: user.name,
-        email: user.email,token});
+    // const token = await user.getSignedJwtToken();
+    // res.status(200).json({ success: true,  _id: user._id,
+    //     name: user.name,
+    //     email: user.email,token});
+    sendTokenResponse(user,200,res);
   } catch (err) {
     res.status(400).json({ success: false });
     console.log(err.stack);
@@ -53,54 +54,57 @@ exports.login = async (req, res, next) => {
         .json({ success: false, msg: "Invalid credentials" });
     }
 
-    // Create token
-    const token = user.getSignedJwtToken();
+    sendTokenResponse(user,200,res);
 
-    res.status(200).json({
-      success: true,
-      //add for frontend
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      //end for frontend
-      token,
-    });
+    // // Create token
+    // const token = user.getSignedJwtToken();
+
+    // res.status(200).json({
+    //   success: true,
+    //   //add for frontend
+    //   _id: user._id,
+    //   name: user.name,
+    //   email: user.email,
+    //   //end for frontend
+    //   token,
+    // });
   } catch (err) {
     res.status(401).json({ success: false, msg: "Cannot convert email or password to string" });
   }
 };
 
 
-// @desc      Get current logged-in user's details
-// @route     GET /api/v1/auth/me
-// @access    Private (since `protect` middleware is used)
-exports.getMe = async (req, res, next) => {
-  try {
-    // `req.user` will be set by the JWT middleware
-    const user = await User.findById(req.user.id);
 
-    if (!user) {
-      return res.status(404).json({
-        success: false,
-        msg: "User not found",
-      });
-    }
 
-    res.status(200).json({
+const sendTokenResponse = (user, statusCode, res) => {
+  const token = user.getSignedJwtToken();
+
+  const options = {
+    expires: new Date(Date.now() + process.env.JWT_COOKIE_EXPIRE * 24 * 60 * 60 * 1000),
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+  };
+
+
+  res.status(statusCode)
+    .cookie('token', token, options)
+    .json({
       success: true,
-      data: {
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role, 
-      },
-    // If you want to return the role as well
+      token,
+      _id: user._id,
+      name: user.name,
+      email: user.email,
     });
-  } catch (err) {
-    console.log(err.stack);
-    res.status(500).json({
-      success: false,
-      msg: "Server error",
-    });
-  }
+};
+
+exports.logout = (req, res, next) => {
+  res.cookie('token', "none", {
+    expires: new Date(0),
+    httpOnly: true,
+  });
+
+  res.status(200).json({
+    success: true,
+    message: 'Logged out successfully',
+  });
 };

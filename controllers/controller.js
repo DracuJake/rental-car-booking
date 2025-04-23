@@ -4,7 +4,6 @@ exports.getAllHospitals = async (req, res) => {
     try {
         let query;
         const reqQuery = { ...req.query };
-        console.log(reqQuery);
         const removeFields = ['select', 'sort','page','limit'];
         removeFields.forEach(param => delete reqQuery[param]);
         let queryStr = JSON.stringify(reqQuery);
@@ -98,8 +97,6 @@ exports.deleteHospital = async (req, res) =>{
         if (!hospital) {
             return res.status(404).json({ success: false, msg: 'Hospital not found' });
         }
-        // await Appointment.deleteMany({ hospital: req.params.id });
-        await Hospital.findByIdAndDelete(req.params.id);
         res.status(200).json({ success: true, msg: {}});
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
