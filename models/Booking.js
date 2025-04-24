@@ -10,6 +10,11 @@ const BookingSchema = new mongoose.Schema({
         ref: 'User',
         required: true
     },
+    providerId: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'RentalProvider',
+        required: true
+    },
     carId: {
         type: mongoose.Schema.ObjectId,
         ref: 'Car',

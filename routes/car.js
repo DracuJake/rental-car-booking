@@ -4,8 +4,8 @@ const { createCar, getAllCars, getCarById, updateCar, deleteCar } = require('../
 const { checkAdmin } = require('../middleware/auth');
 
 router.post('/',checkAdmin ,createCar);
-router.post('/get-by-provider', checkAdmin,getAllCars);
-router.get('/:id', checkAdmin,getCarById);
+router.post('/get-by-provider',getAllCars);
+router.get('/:id',getCarById);
 router.put('/:id', checkAdmin,updateCar);
 router.delete('/:id', checkAdmin,deleteCar);
 

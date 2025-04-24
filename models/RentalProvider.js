@@ -32,9 +32,6 @@ const RentalProviderSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Please add a region']
     }
-}, {
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true }
-});
+},);
 
 module.exports = mongoose.model('RentalProvider', RentalProviderSchema);

@@ -1,4 +1,5 @@
 const Car = require('../models/Car');
+const Booking = require('../models/Booking');
 
 
 exports.createCar = async (req, res) => {
@@ -79,32 +80,42 @@ exports.getCarById = async (req, res) => {
 
 exports.updateCar = async (req, res) => {
     try {
-      const {name, amount,reservedAmount,price} = req.body;
+      const { name, price, amount } = req.body;
+      const carId = req.params.id;
+  
+      const bookings = await Booking.find({
+        carId: carId,
+        rentDate: { $gte: new Date() },
+      });
+  
 
-      const car = await Car.findById(req.params.id);
-      
-      if (!car) {
+      const bookingsByDate = {};
+      bookings.forEach(booking => {
+        const rentDate = booking.rentDate.toISOString().split('T')[0];
+        if (!bookingsByDate[rentDate]) {
+          bookingsByDate[rentDate] = 0;
+        }
+        bookingsByDate[rentDate] += booking.amount;
+      });
+  
+      for (const date in bookingsByDate) {
+        if (bookingsByDate[date] > amount) {
+          return res.status(400).json({
+            success: false,
+            msg: `Cannot update amount to ${amount} because there are already ${bookingsByDate[date]} cars booked on ${date}.`,
+          });
+        }
+      }
+
+      const updatedCar = await Car.findByIdAndUpdate(
+        carId,
+        { name, price, amount },
+        { new: true, runValidators: true }
+      );
+  
+      if (!updatedCar) {
         return res.status(404).json({ success: false, msg: 'Car not found' });
       }
-  
-      if (amount < car.reservedAmount) {
-        return res.status(400).json({ success: false, msg: 'Amount cannot be less than reserved amount' });
-      }
-      const availableAmount = amount - car.reservedAmount;
-      const updatedCar = await Car.findByIdAndUpdate(
-        req.params.id,
-        {
-            ...req.body,
-            name,
-            availableAmount,
-            reservedAmount,
-            price,
-        },
-        {
-          new: true,
-          runValidators: true,
-        }
-      );
   
       res.status(200).json({ success: true, data: updatedCar });
     } catch (error) {
@@ -115,18 +126,13 @@ exports.updateCar = async (req, res) => {
 
 exports.deleteCar = async (req, res) => {
   try {
-    const car = await Car.findById(req.params.id);
+    const car = await Car.findByIdAndDelete(req.params.id);
 
     if (!car) {
       return res.status(404).json({ success: false, msg: 'Car not found' });
     }
-
-    if (car.reservedAmount !== 0) {
-      return res.status(400).json({ success: false, msg: 'Cannot delete car with reserved amount' });
-    }
-
-    await Car.findByIdAndDelete(req.params.id);
-
+    // Cascade delete
+    await Booking.deleteMany({ carId: car._id });
     res.status(200).json({
       success: true,
       msg: 'Car deleted successfully',

@@ -5,7 +5,7 @@ const User = require("../models/User");
 // @access    Public
 exports.register = async (req, res, next) => {
   try {
-    const { name, email, password, role } = req.body;
+    const { name, email, password, role ,tel} = req.body;
 
     // Create user
     const user = await User.create({
@@ -13,6 +13,7 @@ exports.register = async (req, res, next) => {
       email,
       password,
       role,
+      tel,
     });
     // const token = await user.getSignedJwtToken();
     // res.status(200).json({ success: true,  _id: user._id,
@@ -20,7 +21,7 @@ exports.register = async (req, res, next) => {
     //     email: user.email,token});
     sendTokenResponse(user,200,res);
   } catch (err) {
-    res.status(400).json({ success: false });
+    res.status(400).json({ success: false ,err});
     console.log(err.stack);
   }
 };

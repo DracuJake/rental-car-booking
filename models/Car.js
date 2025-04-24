@@ -8,7 +8,7 @@ const carSchema = new Schema({
   },
   amount: {
     type: Number,
-    required: [true, "Amount is required"],
+    default: 1,
   },
   price: {
     type: Number,
@@ -18,16 +18,6 @@ const carSchema = new Schema({
     type: mongoose.Schema.ObjectId,
     ref: "RentalProvider",
     required: true,
-  },
-  reservedAmount: {
-    type: Number,
-    default: 0,
-  },
-  availableAmount: {
-    type: Number,
-    default: function () {
-      return this.amount - this.reservedAmount;
-    },
   },
 });
 
