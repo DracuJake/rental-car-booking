@@ -36,6 +36,11 @@ const UserSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now
+    },
+    registerType: {
+        type: String,
+        enum: ['email', 'gmail'],
+        default: 'email'
     }
 });
 
