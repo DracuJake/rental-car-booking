@@ -6,7 +6,7 @@ const CLIENT_ID = process.env.CLIENT_ID;
 const CLIENT_SECRET = process.env.CLIENT_SECRET;
 const REDIRECT_URI = "http://localhost:5003/auth/google/callback";
 
-exports.register = async (req, res, next) => {
+exports.register = async (req, res) => {
   try {
     const { name, email, password, role, tel } = req.body;
 
@@ -25,7 +25,7 @@ exports.register = async (req, res, next) => {
   }
 };
 
-exports.login = async (req, res, next) => {
+exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -93,7 +93,7 @@ const sendTokenResponse = (user, statusCode, res) => {
   });
 };
 
-exports.logout = (req, res, next) => {
+exports.logout = (req, res) => {
   res.cookie("token", "none", {
     expires: new Date(0),
     httpOnly: true,
@@ -138,7 +138,7 @@ exports.loginByGmailCallback = async (req, res) => {
       grant_type: "authorization_code",
     });
 
-    const { access_token, id_token } = data;
+    const { access_token } = data;
 
     // Use access_token or id_token to fetch user profile
     const { data: profile } = await axios.get(
@@ -147,6 +147,7 @@ exports.loginByGmailCallback = async (req, res) => {
         headers: { Authorization: `Bearer ${access_token}` },
       }
     );
+    console.log(profile);
 
     // find user in database
     const user = await User.findOne({ email: profile.email });

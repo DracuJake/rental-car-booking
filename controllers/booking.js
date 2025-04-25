@@ -1,7 +1,6 @@
 const { decode } = require('punycode');
 const Booking = require('../models/Booking');
 const Car = require('../models/Car');
-const User = require('../models/User');
 
 exports.createBooking = async (req, res) => {
   try {
@@ -79,11 +78,13 @@ exports.getAllBookings = async (req, res) => {
         query = query.sort('-createdAt');
       }
 
+      if (req.user.role === 'user') {
+        query = query.where('userId').equals(req.user.id);
+      }
+
       const page = parseInt(req.query.page, 10) || 1;
       const limit = parseInt(req.query.limit, 10) || 10;
       const startIndex = (page - 1) * limit;
-      const endIndex = page * limit;
-      const total = await Booking.countDocuments();
 
       query = query.skip(startIndex).limit(limit);
       const bookings = await query;

@@ -95,7 +95,7 @@ exports.updateCar = async (req, res) => {
         if (!bookingsByDate[rentDate]) {
           bookingsByDate[rentDate] = 0;
         }
-        bookingsByDate[rentDate] += booking.amount;
+        bookingsByDate[rentDate] += 1;
       });
   
       for (const date in bookingsByDate) {
